@@ -52,4 +52,7 @@ public class RNWebGLTexture {
     public void runOnGLThread (Runnable runnable) {
         RNWebGLView.runOnGLThread(ctxId, runnable);
     }
+    public void capture () {
+        RNWebGLView.capture(ctxId);
+    }
 }
