@@ -16,6 +16,7 @@ export type Extension = {
     config: Config
   ) => Promise<{ texture: RNWebGLTexture, width: number, height: number }>,
   unloadTexture: (texture: RNWebGLTexture) => void,
+  capture: (texture: RNWebGLTexture) => void,
   endFrame: () => void
 };
 
@@ -38,6 +39,8 @@ export default {
           return { texture, width, height };
         }),
       unloadTexture: texture => RNWebGLTextureManager.destroy(texture.id),
+      capture:texture=>  RNWebGLTextureManager.capture(ctxId),//actually texture & ctxId not using but in android code
+
       endFrame: gl.__endFrame.bind(gl)
     })
 };
