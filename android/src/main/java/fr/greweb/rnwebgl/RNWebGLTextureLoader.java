@@ -2,6 +2,7 @@ package fr.greweb.rnwebgl;
 
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.Toast;
 
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -25,6 +26,8 @@ public class RNWebGLTextureLoader extends ReactContextBaseJavaModule {
     }
 
     public RNWebGLTextureConfigLoader objectLoaderForConfig (final ReadableMap config) {
+        Toast.makeText(getReactApplicationContext(), "2", Toast.LENGTH_LONG).show();
+
         if (mLoaders == null) {
             mLoaders = new ArrayList<>();
             for (NativeModule module: this.getReactApplicationContext().getCatalystInstance().getNativeModules()) {
@@ -38,6 +41,7 @@ public class RNWebGLTextureLoader extends ReactContextBaseJavaModule {
                 return loader;
             }
         }
+
         return null;
     }
 
@@ -95,8 +99,10 @@ public class RNWebGLTextureLoader extends ReactContextBaseJavaModule {
         }
         mObjects = remaining;
     }
-      public RNWebGLTexture getRNWebGLTexture (int objId) {
+
+    public RNWebGLTexture getRNWebGLTexture (int objId) {
         RNWebGLTexture obj = mObjects.get(objId);
         return  obj;
     }
+
 }
