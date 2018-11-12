@@ -101,6 +101,6 @@ export default class WebGLView extends React.Component {
   };
 
   static NativeView = requireNativeComponent("RNWebGLView", WebGLView, {
-    nativeOnly: { onSurfaceCreate: true }
+    nativeOnly: { onSurfaceCreate: true}
   });
 }
