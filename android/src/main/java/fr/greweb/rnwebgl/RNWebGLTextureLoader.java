@@ -95,4 +95,8 @@ public class RNWebGLTextureLoader extends ReactContextBaseJavaModule {
         }
         mObjects = remaining;
     }
+      public RNWebGLTexture getRNWebGLTexture (int objId) {
+        RNWebGLTexture obj = mObjects.get(objId);
+        return  obj;
+    }
 }
