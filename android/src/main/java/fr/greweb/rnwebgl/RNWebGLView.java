@@ -1,11 +1,19 @@
 package fr.greweb.rnwebgl;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.opengl.EGL14;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -95,22 +103,8 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
      imageBitmap=  takeScreenshot(unused);
 
   }
-    @ReactMethod
-    public void saveImage(){
 
-        //ReactContext reactContext = (ReactContext)getContext();
-        //RCTEventEmitter eventEmitter = reactContext.getJSModule(RCTEventEmitter.class);
-
-        saveBitmap(imageBitmap);
-        //Toast.makeText(reactContext, "test", Toast.LENGTH_LONG).show();
-
-        //WritableMap response = Arguments.createMap();
-        //response.putString("config", "test");
-        //eventEmitter.receiveEvent(getId(), "capture", response);
-        return;
-    }
-
-    private void saveBitmap(Bitmap bitmap) {
+    private String saveBitmap(Bitmap bitmap) {
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root + "/Images");
         myDir.mkdirs();
@@ -118,24 +112,30 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
         int n = 10000;
         n = generator.nextInt(n);
         String fname = "Image-" + n + ".jpg";
-        File file = new File(myDir, fname);
+        //File file = new File(myDir, fname);
+        File file= new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),fname);
+
         if (file.exists()) file.delete();
         try {
-            FileOutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.flush();
-            out.close();
-            Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
+                // Permission is not granted
+                FileOutputStream out = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                out.flush();
+                out.close();
+                Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
+                return file.getAbsolutePath();
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return e.getMessage();
+        }
     }
     public Bitmap takeScreenshot(GL10 mGL) {
 
         final int mWidth = 480;
         final int mHeight =480;
-        final int startx=0;
+        final int startx=-200;
         IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
         IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
         mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
@@ -149,9 +149,20 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
             }
         }
 
+
         Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
         mBitmap.copyPixelsFromBuffer(ibt);
-        return mBitmap;
+
+
+        Bitmap bmOverlay = Bitmap.createBitmap(mWidth-5, mHeight-200, Bitmap.Config.ARGB_8888);
+
+        Paint paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+
+        Canvas canvas = new Canvas(bmOverlay);
+        canvas.drawBitmap(mBitmap, 0, 0, null);
+        return bmOverlay;
+        //return mBitmap;
     }
     public void onSurfaceChanged(GL10 unused, int width, int height) {
   }
@@ -173,11 +184,14 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
       glView.runOnGLThread(r);
     }
   }
-    public synchronized static void  capture(int ctxId){
-
+    public synchronized static WritableMap  capture(int ctxId){
         RNWebGLView glView = mGLViewMap.get(ctxId);
-        glView.saveBitmap(glView.imageBitmap);
-        return;
+        String out=  glView.saveBitmap(glView.imageBitmap);
+        WritableMap response = Arguments.createMap();
+        response.putString("url", out);
+        response.putInt("width", glView.imageBitmap.getWidth());
+        response.putInt("height", glView.imageBitmap.getHeight());
+        return response;
     }
 
 }

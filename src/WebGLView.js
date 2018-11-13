@@ -74,7 +74,7 @@ export default class WebGLView extends React.Component {
       </View>
     );
   }
-
+  
   onSurfaceCreate = ({
     nativeEvent: { ctxId }
   }: {

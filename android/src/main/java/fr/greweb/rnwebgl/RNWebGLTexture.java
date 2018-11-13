@@ -1,6 +1,7 @@
 package fr.greweb.rnwebgl;
 
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,7 +53,7 @@ public class RNWebGLTexture {
     public void runOnGLThread (Runnable runnable) {
         RNWebGLView.runOnGLThread(ctxId, runnable);
     }
-    public void capture () {
-        RNWebGLView.capture(ctxId);
+    public WritableMap capture () {
+        return RNWebGLView.capture(ctxId);
     }
 }
