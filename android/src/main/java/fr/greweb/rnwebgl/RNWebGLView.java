@@ -45,7 +45,11 @@ import static fr.greweb.rnwebgl.RNWebGL.*;
 public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private boolean onSurfaceCreateCalled = false;
     private int ctxId = -1;
-    public Bitmap imageBitmap;
+    private  int width;
+    private  int height;
+    private  int screenWidth;
+    private  int screenHeight;
+    public IntBuffer intBuffer;
     public boolean captured=false;
 
     private ThemedReactContext reactContext;
@@ -99,12 +103,23 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     // the implementation of `onSurfaceCreated(...)`)
     if (ctxId > 0) {
       RNWebGLContextFlush(ctxId);
+        if(this.width>0&&this.height>0)
+        {
+            intBuffer=  glReadPixels(unused);
+        }
     }
-     imageBitmap=  takeScreenshot(unused);
 
   }
-
-    private String saveBitmap(Bitmap bitmap) {
+    private IntBuffer glReadPixels(GL10 mGL) {
+        final int mWidth = this.width;
+        final int mHeight =this.height;
+        final int startx=0;
+        IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
+        mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
+        return ib;
+    }
+    private WritableMap saveBitmap(IntBuffer intBuffer) {
+        Bitmap bitmap=takeScreenshot(intBuffer);
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root + "/Images");
         myDir.mkdirs();
@@ -124,45 +139,38 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
                 out.flush();
                 out.close();
                 Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
-                return file.getAbsolutePath();
+            WritableMap response = Arguments.createMap();
+            response.putString("url", file.getAbsolutePath());
+            response.putInt("width", bitmap.getWidth());
+            response.putInt("height", bitmap.getHeight());
+            return response;
         } catch (Exception e) {
 
             e.printStackTrace();
-            return e.getMessage();
+            WritableMap response = Arguments.createMap();
+            response.putString("url", e.getMessage());
+            response.putInt("width", 0);
+            response.putInt("height", 0);
+            return response;
         }
     }
-    public Bitmap takeScreenshot(GL10 mGL) {
 
-        final int mWidth = 480;
-        final int mHeight =480;
-        final int startx=-200;
-        IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
+    private Bitmap takeScreenshot(IntBuffer ib) {
+
+        final int mWidth =this.width;
+        final int mHeight =this.height;
         IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
-        mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
-
-
-        // Convert upside down mirror-reversed image to right-side up normal
-        // image.
         for (int i = 0; i < mHeight; i++) {
             for (int j = 0; j < mWidth; j++) {
                 ibt.put((mHeight - i - 1) * mWidth + j, ib.get(i * mWidth + j));
             }
         }
-
-
-        Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        mBitmap.copyPixelsFromBuffer(ibt);
-
-
-        Bitmap bmOverlay = Bitmap.createBitmap(mWidth-5, mHeight-200, Bitmap.Config.ARGB_8888);
-
-        Paint paint = new Paint();
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-
-        Canvas canvas = new Canvas(bmOverlay);
-        canvas.drawBitmap(mBitmap, 0, 0, null);
+        //Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+        Bitmap bmOverlay = Bitmap.createBitmap(mWidth, mHeight-5, Bitmap.Config.ARGB_8888);
+        bmOverlay.copyPixelsFromBuffer(ibt);
+        //Canvas canvas = new Canvas(bmOverlay);
+       // canvas.drawBitmap(mBitmap, 0, 0, null);
         return bmOverlay;
-        //return mBitmap;
     }
     public void onSurfaceChanged(GL10 unused, int width, int height) {
   }
@@ -174,24 +182,29 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     super.onDetachedFromWindow();
   }
 
-    public synchronized void runOnGLThread(Runnable r) {
-    mEventQueue.add(r);
+    public synchronized void runOnGLThread(Runnable r,int width, int height) {
+        this.width=this.screenWidth;
+        int ratio=(width*100)/height;
+        this.height=(this.width*100)/ratio;
+        mEventQueue.add(r);
   }
 
-    public synchronized static void runOnGLThread(int ctxId, Runnable r) {
+    public synchronized static void runOnGLThread(int ctxId,int width,int height, Runnable r) {
     RNWebGLView glView = mGLViewMap.get(ctxId);
     if (glView != null) {
-      glView.runOnGLThread(r);
+      glView.runOnGLThread(r,width,height);
     }
   }
+    public void setScreenWidth(final int width){
+        this.screenWidth=width;
+    }
+    public void setScreenHeight(final int height){
+        this.screenHeight=height;
+    }
     public synchronized static WritableMap  capture(int ctxId){
         RNWebGLView glView = mGLViewMap.get(ctxId);
-        String out=  glView.saveBitmap(glView.imageBitmap);
-        WritableMap response = Arguments.createMap();
-        response.putString("url", out);
-        response.putInt("width", glView.imageBitmap.getWidth());
-        response.putInt("height", glView.imageBitmap.getHeight());
-        return response;
+        WritableMap out=  glView.saveBitmap(glView.intBuffer);
+        return out;
     }
 
 }

@@ -25,7 +25,14 @@ public class RNWebGLViewManager extends SimpleViewManager<RNWebGLView> {
   public RNWebGLView createViewInstance(ThemedReactContext context) {
     return new RNWebGLView(context);
   }
-
+  @ReactProp(name = "screenWidth")
+  public void setScreenWidth(RNWebGLView view, @Nullable int width) {
+    view.setScreenWidth(width);
+  }
+  @ReactProp(name = "screenHeight")
+  public void setScreenHeight(RNWebGLView view, @Nullable int height) {
+    view.setScreenHeight(height);
+  }
   @Override
   public @Nullable Map getExportedCustomDirectEventTypeConstants() {
     return MapBuilder.of(

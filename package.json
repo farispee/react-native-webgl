@@ -1,30 +1,41 @@
 {
-  "name": "react-native-webgl",
-  "version": "0.8.0",
-  "license": "BSD",
-  "author": "Gaëtan Renaudeau <renaudeau.gaetan@gmail.com>",
-  "description": "React Native implementation of WebGL",
-  "keywords": [
-    "react",
-    "react-native",
-    "webgl"
+  "_args": [
+    [
+      "github:farispee/react-native-webgl",
+      "/home/faris/Developer/journey-app"
+    ]
   ],
-  "main": "lib/index.js",
-  "repository": {
+  "_from": "github:farispee/react-native-webgl",
+  "_id": "react-native-webgl@github:farispee/react-native-webgl#fad46bfdb15ca99a4edf4cf822795120732536d9",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/react-native-webgl",
+  "_phantomChildren": {},
+  "_requested": {
     "type": "git",
-    "url": "https://github.com/react-community/react-native-webgl.git"
+    "raw": "github:farispee/react-native-webgl",
+    "rawSpec": "github:farispee/react-native-webgl",
+    "saveSpec": "github:farispee/react-native-webgl",
+    "fetchSpec": null,
+    "gitCommittish": null
   },
-  "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "github:farispee/react-native-webgl#fad46bfdb15ca99a4edf4cf822795120732536d9",
+  "_spec": "github:farispee/react-native-webgl",
+  "_where": "/home/faris/Developer/journey-app",
+  "author": {
+    "name": "Gaëtan Renaudeau",
+    "email": "renaudeau.gaetan@gmail.com"
   },
-  "scripts": {
-    "prepublish": "babel --source-maps -d lib src && flow-copy-source -v src lib",
-    "watch": "babel --watch --source-maps -d lib src"
+  "bugs": {
+    "url": "https://github.com/react-community/react-native-webgl/issues"
   },
   "dependencies": {
     "prop-types": "^15.5.8"
   },
+  "description": "React Native implementation of WebGL",
   "devDependencies": {
     "babel-cli": "6",
     "babel-eslint": "^7.2.3",
@@ -35,5 +46,27 @@
     "eslint-plugin-flowtype": "^2.35.1",
     "eslint-plugin-react": "^7.3.0",
     "flow-copy-source": "1"
-  }
+  },
+  "homepage": "https://github.com/react-community/react-native-webgl#readme",
+  "keywords": [
+    "react",
+    "react-native",
+    "webgl"
+  ],
+  "license": "BSD",
+  "main": "src/index.js",
+  "name": "react-native-webgl",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-community/react-native-webgl.git"
+  },
+  "scripts": {
+    "prepublish": "babel --source-maps -d lib src && flow-copy-source -v src lib",
+    "watch": "babel --watch --source-maps -d lib src"
+  },
+  "version": "0.8.0"
 }

@@ -47,11 +47,14 @@ export default class WebGLView extends React.Component {
     onContextCreate: PropTypes.func,
     onContextFailure: PropTypes.func,
     msaaSamples: PropTypes.number,
+    screenWidth: PropTypes.number,
+    screenHeight: PropTypes.number,
     ...ViewPropTypes
   };
 
   static defaultProps = {
-    msaaSamples: 4
+    msaaSamples: 4,
+    
   };
 
   render() {
@@ -70,6 +73,7 @@ export default class WebGLView extends React.Component {
           style={{ flex: 1, backgroundColor: "transparent" }}
           onSurfaceCreate={this.onSurfaceCreate}
           msaaSamples={Platform.OS === "ios" ? msaaSamples : undefined}
+        
         />
       </View>
     );

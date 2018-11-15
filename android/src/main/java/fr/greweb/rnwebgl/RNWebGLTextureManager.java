@@ -53,10 +53,10 @@ public class RNWebGLTextureManager extends ReactContextBaseJavaModule {
         });
     }
     @ReactMethod
-    public void capture(final int objId, final Promise promise) {
+    public void capture(final String location, final Promise promise) {
         RNWebGLTexture obj= this.getReactApplicationContext().getNativeModule(RNWebGLTextureLoader.class).getRNWebGLTexture(objId1);
         if(obj!=null) {
-            WritableMap response = obj.capture();
+            WritableMap response = obj.capture(location);
             promise.resolve(response);
         }
     }
