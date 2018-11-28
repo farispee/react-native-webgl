@@ -1,6 +1,7 @@
 package fr.greweb.rnwebgl;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,10 +11,13 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.net.Uri;
 import android.opengl.EGL14;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -45,10 +49,11 @@ import static fr.greweb.rnwebgl.RNWebGL.*;
 public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private boolean onSurfaceCreateCalled = false;
     private int ctxId = -1;
-    private  int width;
-    private  int height;
-    private  int screenWidth;
-    private  int screenHeight;
+    static   int width;
+    static  int height;
+    static  float imgRatio;
+    static  boolean isRedraw=true;
+
     public IntBuffer intBuffer;
     public boolean captured=false;
 
@@ -103,7 +108,7 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     // the implementation of `onSurfaceCreated(...)`)
     if (ctxId > 0) {
       RNWebGLContextFlush(ctxId);
-        if(this.width>0&&this.height>0)
+        if(RNWebGLView.width>0&&RNWebGLView.height>0)
         {
             intBuffer=  glReadPixels(unused);
         }
@@ -111,38 +116,41 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
 
   }
     private IntBuffer glReadPixels(GL10 mGL) {
-        final int mWidth = this.width;
-        final int mHeight =this.height;
+        final int mWidth = RNWebGLView.width;
+        final int mHeight =RNWebGLView.height;
         final int startx=0;
         IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
         mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
         return ib;
     }
-    private WritableMap saveBitmap(IntBuffer intBuffer) {
+    private WritableMap saveBitmap(IntBuffer intBuffer,String location) {
         Bitmap bitmap=takeScreenshot(intBuffer);
-        String root = Environment.getExternalStorageDirectory().toString();
-        File myDir = new File(root + "/Images");
-        myDir.mkdirs();
-        Random generator = new Random();
-        int n = 10000;
-        n = generator.nextInt(n);
-        String fname = "Image-" + n + ".jpg";
-        //File file = new File(myDir, fname);
-        File file= new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),fname);
-
-        if (file.exists()) file.delete();
+        ////String root = Environment.getExternalStorageDirectory().toString();
+        //File myDir = new File(root + "/Images");
+        //myDir.mkdirs();
+        //Random generator = new Random();
+        //int n = 10000;
+        //n =0;// generator.nextInt(n);
+        //String fname = "Image-" + n + ".jpg";
+        ////File file = new File(myDir, fname);
+        //File file= new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),fname);
+        File file= new File(location);
+        if (file.exists())
+        {
+            deleteFileFromMediaStore(this.getContext().getContentResolver(),file);
+            //file.delete();
+        }
         try {
-
-                // Permission is not granted
-                FileOutputStream out = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                out.flush();
-                out.close();
-                Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+            Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
             WritableMap response = Arguments.createMap();
             response.putString("url", file.getAbsolutePath());
             response.putInt("width", bitmap.getWidth());
-            response.putInt("height", bitmap.getHeight());
+            response.putInt("height",  bitmap.getHeight());
+            response.putDouble("ratio",  RNWebGLView.imgRatio);
             return response;
         } catch (Exception e) {
 
@@ -151,14 +159,33 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
             response.putString("url", e.getMessage());
             response.putInt("width", 0);
             response.putInt("height", 0);
+            response.putDouble("ratio",  0);
+
             return response;
         }
     }
-
+    public  void deleteFileFromMediaStore(final ContentResolver contentResolver, final File file) {
+        String canonicalPath;
+        try {
+            canonicalPath = file.getCanonicalPath();
+        } catch (IOException e) {
+            canonicalPath = file.getAbsolutePath();
+        }
+        final Uri uri = MediaStore.Files.getContentUri("external");
+        final int result = contentResolver.delete(uri,
+                MediaStore.Files.FileColumns.DATA + "=?", new String[] {canonicalPath});
+        if (result == 0) {
+            final String absolutePath = file.getAbsolutePath();
+            if (!absolutePath.equals(canonicalPath)) {
+                contentResolver.delete(uri,
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{absolutePath});
+            }
+        }
+    }
     private Bitmap takeScreenshot(IntBuffer ib) {
 
-        final int mWidth =this.width;
-        final int mHeight =this.height;
+        final int mWidth =RNWebGLView.width;
+        final int mHeight =RNWebGLView.height;
         IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
         for (int i = 0; i < mHeight; i++) {
             for (int j = 0; j < mWidth; j++) {
@@ -166,7 +193,7 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
             }
         }
         //Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-        Bitmap bmOverlay = Bitmap.createBitmap(mWidth, mHeight-5, Bitmap.Config.ARGB_8888);
+        Bitmap bmOverlay = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
         bmOverlay.copyPixelsFromBuffer(ibt);
         //Canvas canvas = new Canvas(bmOverlay);
        // canvas.drawBitmap(mBitmap, 0, 0, null);
@@ -181,13 +208,28 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     RNWebGLContextDestroy(ctxId);
     super.onDetachedFromWindow();
   }
-
+    double x=0;
+    double y=0;
     public synchronized void runOnGLThread(Runnable r,int width, int height) {
-        this.width=this.screenWidth;
-        int ratio=(width*100)/height;
-        this.height=(this.width*100)/ratio;
+
+        if (RNWebGLView.isRedraw) {
+            RNWebGLView.isRedraw=false;
+            RNWebGLView.imgRatio = ((float) width / (float) height);
+        }
+        DisplayMetrics mat = getContext().getResources().getDisplayMetrics();
+        float ratio = RNWebGLView.imgRatio;
+        float w = 0;
+        if (ratio >= 1) {
+            w = mat.widthPixels;
+        } else {
+
+            w = mat.widthPixels * ratio - (1.5f - mat.density) * 52f;
+        }
+        float h = (w / ratio);
+        RNWebGLView.width = Math.round(w);
+        RNWebGLView.height = Math.round(h);
         mEventQueue.add(r);
-  }
+    }
 
     public synchronized static void runOnGLThread(int ctxId,int width,int height, Runnable r) {
     RNWebGLView glView = mGLViewMap.get(ctxId);
@@ -195,15 +237,17 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
       glView.runOnGLThread(r,width,height);
     }
   }
-    public void setScreenWidth(final int width){
-        this.screenWidth=width;
+    public void setImgRatio(final float value) {
+        if (value > 0) {
+            RNWebGLView.imgRatio = value;
+            RNWebGLView.isRedraw = true;
+        }
     }
-    public void setScreenHeight(final int height){
-        this.screenHeight=height;
-    }
-    public synchronized static WritableMap  capture(int ctxId){
+
+
+    public synchronized static WritableMap  capture(int ctxId,String location){
         RNWebGLView glView = mGLViewMap.get(ctxId);
-        WritableMap out=  glView.saveBitmap(glView.intBuffer);
+        WritableMap out=  glView.saveBitmap(glView.intBuffer,location);
         return out;
     }
 

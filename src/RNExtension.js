@@ -39,8 +39,8 @@ export default {
           return { texture, width, height };
         }),
       unloadTexture: texture => RNWebGLTextureManager.destroy(texture.id),
-      capture:async (location)=>{ return await RNWebGLTextureManager.capture(location).then(({ url,width,height }) => {
-        return {url,width,height };
+      capture:async (location)=>{ return await RNWebGLTextureManager.capture(location).then(({ url,width,height,ratio }) => {
+        return {url,width,height,ratio };
       });  },//actually texture & ctxId not using but in android code
       endFrame: gl.__endFrame.bind(gl)
     })

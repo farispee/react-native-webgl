@@ -54,6 +54,6 @@ public class RNWebGLTexture {
         RNWebGLView.runOnGLThread(ctxId,width,height, runnable);
     }
     public WritableMap capture (final String location) {
-        return RNWebGLView.capture(ctxId);
+        return RNWebGLView.capture(ctxId,location);
     }
 }
