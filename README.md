@@ -10,7 +10,7 @@ npm i --save react-native-webgl
 # OR
 yarn add react-native-webgl
 ```
-
+### Replace createSurface.js in gl-react lib folder && GLViewNative.js in gl-react-native lib folder with dependencies files.
 
 ### Configure your React Native Application
 
