@@ -49,10 +49,10 @@ import static fr.greweb.rnwebgl.RNWebGL.*;
 public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private boolean onSurfaceCreateCalled = false;
     private int ctxId = -1;
-    static   int width;
-    static  int height;
-    static  float imgRatio;
-    static  boolean isRedraw=true;
+       int width;
+      int height;
+      float imgRatio;
+      boolean isRedraw=true;
 
     public IntBuffer intBuffer;
     public boolean captured=false;
@@ -108,7 +108,7 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     // the implementation of `onSurfaceCreated(...)`)
     if (ctxId > 0) {
       RNWebGLContextFlush(ctxId);
-        if(RNWebGLView.width>0&&RNWebGLView.height>0)
+        if(this.width>0&&this.height>0)
         {
             intBuffer=  glReadPixels(unused);
         }
@@ -116,8 +116,8 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
 
   }
     private IntBuffer glReadPixels(GL10 mGL) {
-        final int mWidth = RNWebGLView.width;
-        final int mHeight =RNWebGLView.height;
+        final int mWidth = this.width;
+        final int mHeight =this.height;
         final int startx=0;
         IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
         mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
@@ -129,15 +129,15 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
         //File myDir = new File(root + "/Images");
         //myDir.mkdirs();
         //Random generator = new Random();
-        //int n = 10000;
-        //n =0;// generator.nextInt(n);
+        //int n = 10;
+        //n = generator.nextInt(n);
         //String fname = "Image-" + n + ".jpg";
-        ////File file = new File(myDir, fname);
+        //File file = new File(myDir, fname);
         //File file= new File( Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),fname);
         File file= new File(location);
         if (file.exists())
         {
-            deleteFileFromMediaStore(this.getContext().getContentResolver(),file);
+            //deleteFileFromMediaStore(this.getContext().getContentResolver(),file);
             //file.delete();
         }
         try {
@@ -150,7 +150,7 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
             response.putString("url", file.getAbsolutePath());
             response.putInt("width", bitmap.getWidth());
             response.putInt("height",  bitmap.getHeight());
-            response.putDouble("ratio",  RNWebGLView.imgRatio);
+            response.putDouble("ratio",  this.imgRatio);
             return response;
         } catch (Exception e) {
 
@@ -184,8 +184,8 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     }
     private Bitmap takeScreenshot(IntBuffer ib) {
 
-        final int mWidth =RNWebGLView.width;
-        final int mHeight =RNWebGLView.height;
+        final int mWidth =this.width;
+        final int mHeight =this.height;
         IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
         for (int i = 0; i < mHeight; i++) {
             for (int j = 0; j < mWidth; j++) {
@@ -212,22 +212,22 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
     double y=0;
     public synchronized void runOnGLThread(Runnable r,int width, int height) {
 
-        if (RNWebGLView.isRedraw) {
-            RNWebGLView.isRedraw=false;
-            RNWebGLView.imgRatio = ((float) width / (float) height);
+        if (this.isRedraw) {
+            this.isRedraw=false;
+            this.imgRatio = ((float) width / (float) height);
         }
         DisplayMetrics mat = getContext().getResources().getDisplayMetrics();
-        float ratio = RNWebGLView.imgRatio;
+        float ratio = this.imgRatio;
         float w = 0;
         if (ratio >= 1) {
             w = mat.widthPixels;
         } else {
 
-            w = mat.widthPixels * ratio - (1.5f - mat.density) * 52f;
+            w = mat.widthPixels * ratio - (1.5f - mat.density) * 52f-20;
         }
         float h = (w / ratio);
-        RNWebGLView.width = Math.round(w);
-        RNWebGLView.height = Math.round(h);
+        this.width = Math.round(w)-10;
+        this.height = Math.round(h)-10;
         mEventQueue.add(r);
     }
 
@@ -239,8 +239,8 @@ public class RNWebGLView extends GLSurfaceView implements GLSurfaceView.Renderer
   }
     public void setImgRatio(final float value) {
         if (value > 0) {
-            RNWebGLView.imgRatio = value;
-            RNWebGLView.isRedraw = true;
+            this.imgRatio = value;
+            this.isRedraw = true;
         }
     }
 

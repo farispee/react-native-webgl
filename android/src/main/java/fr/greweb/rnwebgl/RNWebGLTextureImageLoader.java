@@ -30,7 +30,7 @@ public class RNWebGLTextureImageLoader extends ReactContextBaseJavaModule implem
         int numCpuBoundThreads = poolFactory.getFlexByteArrayPoolMaxNumThreads();
         executorSupplier = new DefaultExecutorSupplier(numCpuBoundThreads);
     }
-
+    
     @Override
     public String getName() {
         return "RNWebGLTextureImageLoader";

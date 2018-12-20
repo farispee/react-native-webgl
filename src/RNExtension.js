@@ -9,7 +9,6 @@ type RNWebGLRenderingContext = WebGLRenderingContext & {
 };
 
 type Config = Object;
-
 export type Extension = {
   // NB more methods can be extended with middlewares
   loadTexture: (
@@ -39,9 +38,12 @@ export default {
           return { texture, width, height };
         }),
       unloadTexture: texture => RNWebGLTextureManager.destroy(texture.id),
-      capture:async (location)=>{ return await RNWebGLTextureManager.capture(location).then(({ url,width,height,ratio }) => {
+      capture:async (texture,location)=>{ 
+        return await RNWebGLTextureManager.capture(ctxId,texture.id,location)
+        .then(({ url,width,height,ratio }) => {
         return {url,width,height,ratio };
-      });  },//actually texture & ctxId not using but in android code
+      });  
+    },//actually texture & ctxId not using but in android code
       endFrame: gl.__endFrame.bind(gl)
     })
 };

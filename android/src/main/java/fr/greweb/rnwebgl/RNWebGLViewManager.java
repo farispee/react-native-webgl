@@ -29,6 +29,7 @@ public class RNWebGLViewManager extends SimpleViewManager<RNWebGLView> {
   public void setRedraw(RNWebGLView view, @Nullable float value) {
     view.setImgRatio(value);
   }
+
   @Override
   public @Nullable Map getExportedCustomDirectEventTypeConstants() {
     return MapBuilder.of(

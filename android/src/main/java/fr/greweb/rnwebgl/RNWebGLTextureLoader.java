@@ -26,6 +26,7 @@ public class RNWebGLTextureLoader extends ReactContextBaseJavaModule {
     }
 
     public RNWebGLTextureConfigLoader objectLoaderForConfig (final ReadableMap config) {
+
         if (mLoaders == null) {
             mLoaders = new ArrayList<>();
             for (NativeModule module: this.getReactApplicationContext().getCatalystInstance().getNativeModules()) {
